@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Start - Spaceship Shooter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: url('gameb.jpg') no-repeat center/cover;
+    overflow: hidden;
+}
+
+#startScreen {
+    display: flex;
+    align-items: center;
+    gap: 30px; /* Space between GIF and button */
+    padding: 20px 40px;
+    border-radius: 20px;
+    color: #fff;
+}
+
+/* GIF floating effect */
+#startScreen img {
+    width: 200px;
+    animation: float 2s ease-in-out infinite;
+    border-radius: 12px;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* Button style */
+#startScreen button {
+    padding: 20px 35px;
+    font-size: 22px;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    cursor: pointer;
+    box-shadow: 0 0 20px #0ff;
+    transition: 0.3s;
+}
+
+#startScreen button:hover {
+    transform: scale(1.05);
+}
+
+/* ------------------ MOBILE PORTRAIT ------------------ */
+@media (max-width: 480px) {
+    #startScreen {
+        flex-direction: column; /* Stack GIF above button */
+        gap: 20px;
+        padding: 20px;
+    }
+
+    #startScreen img {
+        width: 150px; /* Smaller on mobile */
+    }
+
+    #startScreen button {
+        font-size: 18px;
+        padding: 15px 25px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+    <img src="hiii.gif" alt="Spaceship GIF">
+    <button id="playBtn">ᴄᴏᴍᴇ ᴀɴᴅ ᴘʟᴀʏ ᴡɪᴛʜ ᴋᴀʟɪᴍ!</button>
+</div>
+
+<script>
+document.getElementById('playBtn').onclick = () => {
+    // Go to your main game page
+    window.location.href = "starts.html";
+};
+</script>
+
+</body>
+</html>

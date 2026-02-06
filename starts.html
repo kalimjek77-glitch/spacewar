@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spaceship Shooter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* -------------------- BODY & GAME AREA -------------------- */
+body {
+    margin: 0;
+    background: #0d0d0d;
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+}
+
+#scorePanel {
+    width: 95%;
+    max-width: 420px;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    margin-top: 10px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 12px;
+    box-shadow: 0 0 12px #0ff;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#scorePanel span {
+    text-shadow: 0 0 8px #0ff;
+    color: #0ff;
+}
+
+#gameArea {
+    position: relative;
+    width: 95%;
+    max-width: 420px;
+    height: 72vh;
+    margin: 10px 0;
+    background: url('gameb.jpg') no-repeat center/cover;
+    border-radius: 14px;
+    box-shadow: 0 0 20px #00f;
+    overflow: hidden;
+    touch-action: none;
+}
+
+/* -------------------- PLAYER & ENEMIES -------------------- */
+.player, .enemy {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 8px;
+}
+
+.player {
+    background-image: url('war.png');
+}
+
+.enemy {
+    transform: rotate(180deg);
+}
+
+/* -------------------- BULLETS -------------------- */
+.bullet, .enemy-bullet, .bomb-bullet {
+    position: absolute;
+    border-radius: 50%;
+}
+
+.bullet {
+    width: 6px;
+    height: 12px;
+    background: #ff0;
+    box-shadow: 0 0 8px #ff0;
+}
+
+.enemy-bullet {
+    width: 6px;
+    height: 12px;
+    background: #0ff;
+    box-shadow: 0 0 8px #0ff;
+}
+
+.bomb-bullet {
+    width: 8px;
+    height: 16px;
+    background: orange;
+    box-shadow: 0 0 12px red;
+}
+
+/* -------------------- BUTTONS & SKILLS -------------------- */
+button.skill-btn {
+    position: fixed;
+    bottom: 12px;
+    padding: 12px 18px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 10;
+    opacity: 1;
+}
+
+.skill-btn.cooldown {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.cooldown-text {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #fff;
+    text-shadow: 0 0 4px #000;
+}
+
+#ultimateBtn { left: 12px; background: orange; color: #000; }
+#bombBtn { left: 130px; background: purple; color: #fff; }
+#restartBtn {
+    left: 50%;
+    transform: translateX(-50%);
+    background: red;
+    color: #fff;
+    display: none;
+}
+
+/* -------------------- GAME OVER SCREEN -------------------- */
+#gameOverScreen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    text-shadow: 0 0 10px red;
+    font-size: 26px;
+    background: rgba(0,0,0,0.4);
+}
+
+/* -------------------- MUSIC SELECTION -------------------- */
+#musicSelect {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#musicBox {
+    background: #111;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 20px #0ff;
+}
+
+#musicBox button {
+    margin-top: 15px;
+    padding: 12px 25px;
+}
+
+/* -------------------- EFFECTS -------------------- */
+.ultimate-fire {
+    position: absolute;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, #00f, #fff, #f00, #ff0);
+    box-shadow: 0 0 20px #00f, 0 0 30px #fff, 0 0 40px #f00, 0 0 50px #ff0;
+    pointer-events: none;
+}
+
+.fire-explosion {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, yellow, red, transparent);
+    animation: fireAnim 1s forwards;
+}
+
+@keyframes fireAnim {
+    from { transform: scale(.2); opacity: 1; }
+    to { transform: scale(1.6); opacity: 0; }
+}
+#musicSelect {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(6px);
+}
+
+#musicBox {
+  background: #111;
+  padding: 30px 35px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 0 25px #0ff, 0 0 50px rgba(0,255,255,0.2);
+  max-width: 380px;
+  width: 90%;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#musicBox h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #0ff;
+  text-shadow: 0 0 6px #0ff;
+}
+
+/* -------------------- TRACK OPTIONS -------------------- */
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.track-option {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: #1a1a1a;
+  padding: 12px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  font-size: 18px;
+}
+
+.track-option:hover {
+  border-color: #0ff;
+  background: #0a0a0a;
+}
+
+.track-option input[type="radio"] {
+  display: none;
+}
+
+.track-option input[type="radio"]:checked + span {
+  color: #0ff;
+  font-weight: bold;
+  text-shadow: 0 0 8px #0ff;
+}
+
+/* -------------------- START BUTTON -------------------- */
+#startMusic {
+  padding: 14px 28px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg,#00f,#0ff);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 0 12px #0ff, 0 0 25px rgba(0,255,255,0.3);
+  transition: 0.3s;
+}
+
+#startMusic:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px #0ff, 0 0 40px rgba(0,255,255,0.4);
+}
+
+/* -------------------- RESPONSIVE -------------------- */
+@media (max-width: 480px) {
+  #musicBox {
+    padding: 20px 20px;
+  }
+
+  #musicBox h2 {
+    font-size: 20px;
+  }
+
+  .track-option {
+    font-size: 16px;
+    padding: 10px 14px;
+  }
+
+  #startMusic {
+    font-size: 16px;
+    padding: 12px 24px;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div id="scorePanel">
+  <span id="score">Score: 0</span>
+  <span id="highScore">Highest: 0</span>
+</div>
+
+<div id="gameArea">
+  <div id="player" class="player"></div>
+  <div id="gameOverScreen">☠️<h1>GAME OVER</h1></div>
+</div>
+
+<button id="ultimateBtn" class="skill-btn">ULTIMATE</button>
+<button id="bombBtn" class="skill-btn">BOMB</button>
+<button id="restartBtn" class="skill-btn">RESTART</button>
+
+<div id="musicSelect">
+  <div id="musicBox">
+    <h2>Select Your Track</h2>
+    <div class="track-list">
+      <label class="track-option">
+        <input type="radio" name="bgm" value="0" checked>
+        <span>Track 1 - Roses</span>
+      </label>
+      <label class="track-option">
+        <input type="radio" name="bgm" value="1">
+        <span>Track 2 - Fireflies</span>
+      </label>
+      <label class="track-option">
+        <input type="radio" name="bgm" value="2">
+        <span>Track 3 - Found You</span>
+      </label>
+      <label class="track-option">
+        <input type="radio" name="bgm" value="3">
+        <span>Track 4 - Ghost</span>
+      </label>
+    </div>
+    <button id="startMusic">START GAME</button>
+  </div>
+</div>
+
+<audio id="bgSound"></audio>
+<audio id="bombSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8b6d1b6b2f.mp3"></audio>
+<audio id="ultimateSound" src="https://cdn.pixabay.com/audio/2023/03/28/audio_2e0b2f8a47.mp3"></audio>
+
+<script>
+const playlist=["roses.mp3","fireflies.mp3","foundyou.mp3","ghost.mp3"];
+const bgSound=document.getElementById('bgSound');
+let currentTrack=0;
+bgSound.addEventListener('ended',()=>{ currentTrack=(currentTrack+1)%playlist.length; bgSound.src=playlist[currentTrack]; bgSound.play(); });
+
+const gameArea=document.getElementById('gameArea');
+const player=document.getElementById('player');
+const ultimateBtn=document.getElementById('ultimateBtn');
+const bombBtn=document.getElementById('bombBtn');
+const restartBtn=document.getElementById('restartBtn');
+const gameOverScreen=document.getElementById('gameOverScreen');
+const bombSound=document.getElementById('bombSound');
+const ultimateSound=document.getElementById('ultimateSound');
+
+let playerX=0,playerY=0,score=0,highScore=0,gameOver=false;
+let spawnInterval=2500,enemySpeed=1,elapsedTime=0,gameTimer=0;
+let ultimateActive=false,bombActive=false;
+
+const keys={},bullets=[],enemies=[],enemyBullets=[],bombs=[];
+
+// CENTER PLAYER
+function centerPlayer(){ playerX=(gameArea.clientWidth-player.offsetWidth)/2; playerY=gameArea.clientHeight-player.offsetHeight-20; player.style.transform=`translate(${playerX}px,${playerY}px)`;}
+window.addEventListener('load',centerPlayer);
+window.addEventListener('resize',centerPlayer);
+
+// TOUCH DRAG
+gameArea.addEventListener('touchmove',e=>{ const rect=gameArea.getBoundingClientRect(); const t=e.touches[0]; playerX=t.clientX-rect.left-player.offsetWidth/2; playerY=t.clientY-rect.top-player.offsetHeight/2; });
+
+// INPUT KEYS
+document.addEventListener('keydown',e=>keys[e.key]=true);
+document.addEventListener('keyup',e=>keys[e.key]=false);
+
+// BULLET
+function shootBullet(){
+ const b=document.createElement('div'); b.classList.add('bullet');
+ b.style.left=playerX+player.offsetWidth/2-3+'px';
+ b.style.top=playerY+'px';
+ gameArea.appendChild(b); bullets.push(b);
+}
+
+// ENEMY
+function spawnEnemy(){
+ const e=document.createElement('div'); 
+ e.classList.add('enemy');
+ e.style.left=Math.random()*(gameArea.clientWidth-40)+'px';
+ e.style.top='-40px';
+ const type=Math.floor(Math.random()*3)+1; 
+ e.dataset.type=type;
+
+ if(type==1){ e.style.backgroundImage="url('3.png')"; e.dataset.hp=1; }
+ if(type==2){ e.style.backgroundImage="url('1.png')"; e.dataset.hp=2; }
+ if(type==3){ e.style.backgroundImage="url('12.png')"; e.dataset.hp=3; }
+
+ gameArea.appendChild(e); enemies.push(e);
+}
+
+// ENEMY SHOOT
+function enemyShoot(enemy){
+ const type=parseInt(enemy.dataset.type);
+ if(type==1){ for(let i=0;i<2;i++){ const b=document.createElement('div'); b.classList.add('bomb-bullet'); b.style.left=enemy.offsetLeft+20+'px'; b.style.top=enemy.offsetTop+40+'px'; b.speedX=(Math.random()-0.5)*4; b.speedY=4; gameArea.appendChild(b); enemyBullets.push(b);} }
+ if(type==2){ const b=document.createElement('div'); b.classList.add('enemy-bullet'); b.style.left=enemy.offsetLeft+20+'px'; b.style.top=enemy.offsetTop+40+'px'; gameArea.appendChild(b); enemyBullets.push(b);}
+ if(type==3){ for(let i=-1;i<=1;i++){ const b=document.createElement('div'); b.classList.add('enemy-bullet'); b.style.left=enemy.offsetLeft+20+i*8+'px'; b.style.top=enemy.offsetTop+40+'px'; gameArea.appendChild(b); enemyBullets.push(b);} }
+}
+
+// COOLDOWN
+let ultimateReady=true, bombReady=true;
+function setCooldown(btn, sec){
+ btn.classList.add('cooldown');
+ const text=document.createElement('div'); text.className='cooldown-text'; btn.appendChild(text);
+ let remaining=sec;
+ const interval=setInterval(()=>{ remaining--; text.innerText=remaining; if(remaining<=0){ clearInterval(interval); btn.classList.remove('cooldown'); text.remove(); } },1000);
+}
+
+// ULTIMATE - 100 bullets over 5 seconds
+ultimateBtn.onclick = () => {
+    if (!ultimateReady || gameOver) return;
+    ultimateReady = false;
+    ultimateSound.play();
+
+    // Set cooldown
+    let ultimateCooldown = 40;
+    if (gameTimer >= 60) ultimateCooldown -= 5;
+    setCooldown(ultimateBtn, ultimateCooldown);
+
+    ultimateActive = true;
+    let bulletsFired = 0;
+    const totalBullets = 100;
+    const intervalTime = 5000 / totalBullets; // 5000ms / 100 bullets = 50ms per bullet
+
+    const fireInterval = setInterval(() => {
+        if (gameOver || bulletsFired >= totalBullets) {
+            clearInterval(fireInterval);
+            ultimateActive = false;
+            ultimateReady = true;
+            return;
+        }
+
+        // Create a bullet at player's current position
+        const b = document.createElement('div');
+        b.classList.add('bullet');
+        b.style.left = playerX + player.offsetWidth / 2 - 3 + 'px';
+        b.style.top = playerY + 'px';
+        gameArea.appendChild(b);
+        bullets.push(b);
+
+        bulletsFired++;
+    }, intervalTime); // 50ms per bullet
+};
+
+
+// BOMB
+bombBtn.onclick=()=>{
+ if(!bombReady || gameOver) return;
+ bombReady=false;
+ bombSound.play();
+ let bombCooldown=40; if(gameTimer>=60) bombCooldown-=5;
+ setCooldown(bombBtn, bombCooldown);
+
+ for(let i=0;i<5;i++){
+   const b=document.createElement('div');
+   b.classList.add('bomb-bullet');
+   b.style.left=playerX+player.offsetWidth/2-4+'px';
+   b.style.top=playerY-10+'px';
+   b.speedX=(Math.random()-0.5)*6;
+   b.speedY=-6-Math.random()*2;
+   gameArea.appendChild(b);
+   bombs.push(b);
+ }
+ setTimeout(()=>{ bombActive=false; },500);
+};
+
+// COLLISION
+function isCollide(a,b){ const ar=a.getBoundingClientRect(); const br=b.getBoundingClientRect(); return !(ar.right<br.left || ar.left>br.right || ar.bottom<br.top || ar.top>br.bottom);}
+function createExplosion(x,y){ const f=document.createElement('div'); f.classList.add('fire-explosion'); f.style.left=x-30+'px'; f.style.top=y-30+'px'; gameArea.appendChild(f); setTimeout(()=>f.remove(),1000);}
+
+// END GAME
+function endGame(){ gameOver=true; gameOverScreen.style.display='flex'; restartBtn.style.display='block'; bgSound.pause(); document.getElementById('musicSelect').style.display='flex';}
+
+// RESTART
+restartBtn.onclick=()=>{
+ gameOver=false; gameOverScreen.style.display='none'; restartBtn.style.display='none';
+ score=0;
+ bullets.forEach(b=>b.remove()); enemies.forEach(e=>e.remove()); enemyBullets.forEach(b=>b.remove()); bombs.forEach(b=>b.remove());
+ bullets.length=enemies.length=enemyBullets.length=bombs.length=0;
+ centerPlayer(); gameLoop();
+}
+
+// INCREASE DIFFICULTY
+function increaseDifficulty(){ if(spawnInterval>800) spawnInterval-=50; enemySpeed+=0.05; setTimeout(increaseDifficulty,10000);}
+increaseDifficulty();
+
+// GAME LOOP
+function gameLoop(){
+ if(gameOver) return;
+
+ if(keys['ArrowLeft']) playerX-=5; if(keys['ArrowRight']) playerX+=5; if(keys['ArrowUp']) playerY-=5; if(keys['ArrowDown']) playerY+=5;
+ playerX=Math.max(0,Math.min(gameArea.clientWidth-player.offsetWidth,playerX));
+ playerY=Math.max(0,Math.min(gameArea.clientHeight-player.offsetHeight,playerY));
+ player.style.transform=`translate(${playerX}px,${playerY}px)`;
+
+ // BULLETS
+ bullets.forEach((b,i)=>{
+   b.style.top=b.offsetTop-8+'px';
+   if(b.offsetTop<0){ b.remove(); bullets.splice(i,1); return; }
+   enemies.forEach((e,j)=>{
+       if(isCollide(b,e)){
+           e.dataset.hp=parseInt(e.dataset.hp)-1;
+           createExplosion(e.offsetLeft+20,e.offsetTop+20); 
+           score+=5;
+           b.remove(); bullets.splice(i,1);
+           if(parseInt(e.dataset.hp)<=0){ e.remove(); enemies.splice(j,1); score+=5; }
+       }
+   });
+ });
+
+ // ENEMIES
+ enemies.forEach((e,i)=>{
+   e.style.top=e.offsetTop+enemySpeed+'px';
+   if(Math.random()<0.01) enemyShoot(e);
+   if(e.offsetTop>gameArea.clientHeight){ e.remove(); enemies.splice(i,1); score-=5; }
+   if(isCollide(e,player)) endGame();
+ });
+
+ // ENEMY BULLETS
+ enemyBullets.forEach((b,i)=>{
+   b.style.top=b.offsetTop+5+'px';
+   if(isCollide(b,player)) endGame();
+   if(b.offsetTop>gameArea.clientHeight){ b.remove(); enemyBullets.splice(i,1); }
+ });
+
+ // BOMBS
+ bombs.forEach((b,i)=>{
+   b.style.top=b.offsetTop+b.speedY+'px';
+   b.style.left=b.offsetLeft+b.speedX+'px';
+   enemies.forEach((e,j)=>{ 
+       if(isCollide(b,e)){ e.dataset.hp=parseInt(e.dataset.hp)-1; createExplosion(e.offsetLeft+20,e.offsetTop+20); 
+           if(parseInt(e.dataset.hp)<=0){ e.remove(); enemies.splice(j,1); score+=10; } 
+       }
+   });
+   if(b.offsetTop<0 || b.offsetLeft<0 || b.offsetLeft>gameArea.clientWidth){ b.remove(); bombs.splice(i,1); }
+ });
+
+ // SCORE
+ document.getElementById('score').innerText='Score: '+score;
+ if(score>highScore) highScore=score;
+ document.getElementById('highScore').innerText='Highest: '+highScore;
+
+ elapsedTime+=16.66;
+ if(elapsedTime>spawnInterval){ spawnEnemy(); elapsedTime=0; }
+
+ requestAnimationFrame(gameLoop);
+}
+
+// AUTO SHOOT
+setInterval(()=>{ if(!gameOver) shootBullet(); },300);
+
+// GAME TIMER
+setInterval(()=>{ if(!gameOver) gameTimer+=1; },1000);
+
+// START MUSIC & GAME
+document.getElementById('startMusic').onclick=()=>{
+ currentTrack=parseInt(document.querySelector('input[name="bgm"]:checked').value);
+ bgSound.src=playlist[currentTrack];
+ bgSound.play();
+ document.getElementById('musicSelect').style.display='none';
+ gameLoop();
+};
+</script>
+
+</body>
+</html>
