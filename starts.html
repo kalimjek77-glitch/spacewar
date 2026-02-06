@@ -317,7 +317,6 @@ button.skill-btn {
 </div>
 
 <button id="ultimateBtn" class="skill-btn">ULTIMATE</button>
-<button id="bombBtn" class="skill-btn">BOMB</button>
 <button id="restartBtn" class="skill-btn">RESTART</button>
 
 <div id="musicSelect">
@@ -358,7 +357,6 @@ bgSound.addEventListener('ended',()=>{ currentTrack=(currentTrack+1)%playlist.le
 const gameArea=document.getElementById('gameArea');
 const player=document.getElementById('player');
 const ultimateBtn=document.getElementById('ultimateBtn');
-const bombBtn=document.getElementById('bombBtn');
 const restartBtn=document.getElementById('restartBtn');
 const gameOverScreen=document.getElementById('gameOverScreen');
 const bombSound=document.getElementById('bombSound');
@@ -430,7 +428,7 @@ ultimateBtn.onclick = () => {
     ultimateSound.play();
 
     // Set cooldown
-    let ultimateCooldown = 40;
+    let ultimateCooldown = 10;
     if (gameTimer >= 60) ultimateCooldown -= 5;
     setCooldown(ultimateBtn, ultimateCooldown);
 
@@ -457,28 +455,6 @@ ultimateBtn.onclick = () => {
 
         bulletsFired++;
     }, intervalTime); // 50ms per bullet
-};
-
-
-// BOMB
-bombBtn.onclick=()=>{
- if(!bombReady || gameOver) return;
- bombReady=false;
- bombSound.play();
- let bombCooldown=40; if(gameTimer>=60) bombCooldown-=5;
- setCooldown(bombBtn, bombCooldown);
-
- for(let i=0;i<5;i++){
-   const b=document.createElement('div');
-   b.classList.add('bomb-bullet');
-   b.style.left=playerX+player.offsetWidth/2-4+'px';
-   b.style.top=playerY-10+'px';
-   b.speedX=(Math.random()-0.5)*6;
-   b.speedY=-6-Math.random()*2;
-   gameArea.appendChild(b);
-   bombs.push(b);
- }
- setTimeout(()=>{ bombActive=false; },500);
 };
 
 // COLLISION
@@ -540,17 +516,6 @@ function gameLoop(){
    if(b.offsetTop>gameArea.clientHeight){ b.remove(); enemyBullets.splice(i,1); }
  });
 
- // BOMBS
- bombs.forEach((b,i)=>{
-   b.style.top=b.offsetTop+b.speedY+'px';
-   b.style.left=b.offsetLeft+b.speedX+'px';
-   enemies.forEach((e,j)=>{ 
-       if(isCollide(b,e)){ e.dataset.hp=parseInt(e.dataset.hp)-1; createExplosion(e.offsetLeft+20,e.offsetTop+20); 
-           if(parseInt(e.dataset.hp)<=0){ e.remove(); enemies.splice(j,1); score+=10; } 
-       }
-   });
-   if(b.offsetTop<0 || b.offsetLeft<0 || b.offsetLeft>gameArea.clientWidth){ b.remove(); bombs.splice(i,1); }
- });
 
  // SCORE
  document.getElementById('score').innerText='Score: '+score;
