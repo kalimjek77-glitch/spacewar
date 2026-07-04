@@ -1,92 +1,1242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Start - Spaceship Shooter</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: url('gameb.jpg') no-repeat center/cover;
-    overflow: hidden;
-}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Snakes & Ladders · Big Board + 3D Dice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-#startScreen {
-    display: flex;
-    align-items: center;
-    gap: 30px; /* Space between GIF and button */
-    padding: 20px 40px;
-    border-radius: 20px;
-    color: #fff;
-}
+        body {
+            background: #1a1410;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 8px;
+            background-image: radial-gradient(circle at 20% 30%, #3d2b1f, #1a1410);
+            touch-action: manipulation;
+        }
 
-/* GIF floating effect */
-#startScreen img {
-    width: 200px;
-    animation: float 2s ease-in-out infinite;
-    border-radius: 12px;
-}
+        .game-wrapper {
+            background: #5a3f2b;
+            padding: 14px 14px 12px 14px;
+            border-radius: 28px 28px 20px 20px;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(255, 215, 140, 0.2);
+            border-bottom: 6px solid #3d2b1f;
+            max-width: 780px;
+            width: 100%;
+            position: relative;
+        }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
-}
+        .board-container {
+            position: relative;
+            background: #2b5a3a;
+            padding: 10px;
+            border-radius: 18px;
+            box-shadow: inset 0 0 0 3px #1e3f2a, inset 0 0 20px #0f1f15;
+        }
 
-/* Button style */
-#startScreen button {
-    padding: 20px 35px;
-    font-size: 22px;
-    font-weight: bold;
-    border: none;
-    border-radius: 12px;
-    color: #000;
-    cursor: pointer;
-    box-shadow: 0 0 20px #0ff;
-    transition: 0.3s;
-}
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1/1;
+            border-radius: 14px;
+            background: #e8d5b5;
+            box-shadow: 0 0 0 2px #3d2b1f;
+            max-width: 740px;
+            margin: 0 auto;
+            touch-action: none;
+        }
 
-#startScreen button:hover {
-    transform: scale(1.05);
-}
+        /* ----- 3D DICE (replaces old dice) ----- */
+        .dice-3d-container {
+            width: 70px;
+            height: 70px;
+            perspective: 400px;
+            flex-shrink: 0;
+        }
+        .dice-3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(0deg) rotateY(0deg);
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+            will-change: transform;
+        }
+        .dice-3d.rolling {
+            transition: transform 0.15s linear;
+        }
+        .dice-3d .face {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            background: #fcf9f2;
+            border: 2px solid #ccc;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: visible;
+            font-size: 30px;
+            font-weight: 900;
+            color: #1a1410;
+        }
+        /* Face positions */
+        .dice-3d .face-front  { transform: translateZ(35px); }
+        .dice-3d .face-back   { transform: rotateY(180deg) translateZ(35px); }
+        .dice-3d .face-right  { transform: rotateY(90deg) translateZ(35px); }
+        .dice-3d .face-left   { transform: rotateY(-90deg) translateZ(35px); }
+        .dice-3d .face-top    { transform: rotateX(90deg) translateZ(35px); }
+        .dice-3d .face-bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-/* ------------------ MOBILE PORTRAIT ------------------ */
-@media (max-width: 480px) {
-    #startScreen {
-        flex-direction: column; /* Stack GIF above button */
-        gap: 20px;
-        padding: 20px;
-    }
+        /* Dots pattern using CSS */
+        .face .dot-grid {
+            display: grid;
+            width: 60px;
+            height: 60px;
+            padding: 8px;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .face .dot {
+            border-radius: 50%;
+            background: #1a1410;
+            width: 100%;
+            height: 100%;
+            max-width: 14px;
+            max-height: 14px;
+            place-self: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .face .dot.empty { background: transparent; box-shadow: none; }
 
-    #startScreen img {
-        width: 150px; /* Smaller on mobile */
-    }
+        /* Predefined dot layouts */
+        .face-1 .dot-grid { grid-template-areas: ". . ." ". a ." ". . ."; }
+        .face-2 .dot-grid { grid-template-areas: "a . ." ". . ." ". . b"; }
+        .face-3 .dot-grid { grid-template-areas: "a . ." ". b ." ". . c"; }
+        .face-4 .dot-grid { grid-template-areas: "a . b" ". . ." "c . d"; }
+        .face-5 .dot-grid { grid-template-areas: "a . b" ". c ." "d . e"; }
+        .face-6 .dot-grid { grid-template-areas: "a . b" "c . d" "e . f"; }
 
-    #startScreen button {
-        font-size: 18px;
-        padding: 15px 25px;
-    }
-}
-</style>
+        .face .dot { grid-area: auto; }
+        .face-1 .dot.a { grid-area: a; }
+        .face-2 .dot.a { grid-area: a; }
+        .face-2 .dot.b { grid-area: b; }
+        .face-3 .dot.a { grid-area: a; }
+        .face-3 .dot.b { grid-area: b; }
+        .face-3 .dot.c { grid-area: c; }
+        .face-4 .dot.a { grid-area: a; }
+        .face-4 .dot.b { grid-area: b; }
+        .face-4 .dot.c { grid-area: c; }
+        .face-4 .dot.d { grid-area: d; }
+        .face-5 .dot.a { grid-area: a; }
+        .face-5 .dot.b { grid-area: b; }
+        .face-5 .dot.c { grid-area: c; }
+        .face-5 .dot.d { grid-area: d; }
+        .face-5 .dot.e { grid-area: e; }
+        .face-6 .dot.a { grid-area: a; }
+        .face-6 .dot.b { grid-area: b; }
+        .face-6 .dot.c { grid-area: c; }
+        .face-6 .dot.d { grid-area: d; }
+        .face-6 .dot.e { grid-area: e; }
+        .face-6 .dot.f { grid-area: f; }
+
+        /* ----- OVERLAYS (setup, game over) ----- */
+        .setup-overlay, .game-over-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 28px 32px 34px 32px;
+            text-align: center;
+            color: #fff;
+            border: 2px solid rgba(255, 215, 0, 0.25);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+            min-width: 260px;
+            width: 90%;
+            max-width: 420px;
+        }
+        .setup-overlay.hidden, .game-over-overlay.hidden {
+            display: none;
+        }
+        .setup-overlay h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        .setup-overlay .subtitle {
+            opacity: 0.7;
+            margin-bottom: 14px;
+        }
+        .setup-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px 16px;
+            margin: 6px 0;
+        }
+        .setup-row label { font-weight: 600; font-size: 16px; }
+        .setup-row select, .setup-row input {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 16px;
+            backdrop-filter: blur(4px);
+        }
+        .setup-row select option { background: #1a1410; }
+        .setup-row input::placeholder { color: rgba(255,255,255,0.5); }
+        .player-setup {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 10px 0;
+            width: 100%;
+        }
+        .player-setup .player-entry {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.06);
+            padding: 6px 12px;
+            border-radius: 30px;
+        }
+        .player-setup .player-entry .emoji-display { font-size: 28px; width: 40px; text-align: center; }
+        .player-setup .player-entry input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 16px;
+            padding: 6px 4px;
+            outline: none;
+        }
+        .player-setup .player-entry input:focus { border-bottom-color: #ffd700; }
+        .btn-start {
+            background: #f1c40f;
+            border: none;
+            color: #1a1410;
+            font-size: 22px;
+            font-weight: 800;
+            padding: 12px 40px;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b38f0a;
+            transition: all 0.08s ease;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+        .btn-start:hover { background: #ffdb4f; transform: scale(1.02); }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 1px 0 #b38f0a; }
+
+        .game-over-overlay .title { font-size: 36px; font-weight: 900; margin-bottom: 4px; }
+        .game-over-overlay .sub { font-size: 18px; opacity: 0.7; margin-bottom: 14px; }
+        .game-over-overlay .btn-restart {
+            background: #f1c40f;
+            border: none;
+            color: #1a1410;
+            font-size: 20px;
+            font-weight: 800;
+            padding: 12px 34px;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b38f0a;
+            transition: all 0.08s ease;
+            text-transform: uppercase;
+        }
+        .game-over-overlay .btn-restart:hover { background: #ffdb4f; transform: scale(1.03); }
+        .game-over-overlay .btn-restart:active { transform: translateY(4px); box-shadow: 0 1px 0 #b38f0a; }
+        .game-over-overlay.win .title { color: #f1c40f; }
+
+        /* ----- SIDEBAR ----- */
+        .sidebar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding: 0 4px;
+            color: #f0e0c0;
+            gap: 12px;
+        }
+        .player-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            font-weight: 600;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 6px 16px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
+        .player-list .p-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .player-list .p-item .emoji { font-size: 22px; }
+        .player-list .p-item .pos { opacity: 0.6; font-weight: 400; margin-left: 2px; }
+        .player-list .p-item.active { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+
+        .dice-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn-roll {
+            background: #f1c40f;
+            border: none;
+            color: #1a1410;
+            font-size: 20px;
+            font-weight: 800;
+            padding: 10px 26px;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b38f0a, 0 4px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.08s ease;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .btn-roll:hover:not(:disabled) { background: #ffdb4f; transform: scale(1.03); }
+        .btn-roll:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #b38f0a; }
+        .btn-roll:disabled {
+            opacity: 0.3;
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #b38f0a;
+            cursor: not-allowed;
+        }
+        .status-msg {
+            font-size: 16px;
+            font-weight: 600;
+            padding: 4px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            min-width: 110px;
+            text-align: center;
+            color: #ffe68f;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .game-wrapper { padding: 10px; border-radius: 20px; }
+            .board-container { padding: 6px; }
+            .dice-3d-container { width: 56px; height: 56px; }
+            .dice-3d .face { width: 56px; height: 56px; border-radius: 10px; }
+            .dice-3d .face-front  { transform: translateZ(28px); }
+            .dice-3d .face-back   { transform: rotateY(180deg) translateZ(28px); }
+            .dice-3d .face-right  { transform: rotateY(90deg) translateZ(28px); }
+            .dice-3d .face-left   { transform: rotateY(-90deg) translateZ(28px); }
+            .dice-3d .face-top    { transform: rotateX(90deg) translateZ(28px); }
+            .dice-3d .face-bottom { transform: rotateX(-90deg) translateZ(28px); }
+            .face .dot-grid { width: 48px; height: 48px; padding: 6px; gap: 3px; }
+            .face .dot { max-width: 12px; max-height: 12px; }
+            .sidebar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .player-list { font-size: 14px; padding: 5px 12px; gap: 6px 12px; }
+            .dice-area { justify-content: center; }
+            .btn-roll { font-size: 17px; padding: 8px 20px; }
+            .status-msg { font-size: 14px; min-width: 80px; }
+            .setup-overlay, .game-over-overlay { padding: 20px; min-width: 200px; }
+            .setup-overlay h1 { font-size: 22px; }
+            .game-over-overlay .title { font-size: 28px; }
+            .game-over-overlay .btn-restart { font-size: 17px; padding: 10px 26px; }
+        }
+        @media (max-width: 420px) {
+            .game-wrapper { padding: 6px; }
+            .board-container { padding: 4px; }
+            .dice-3d-container { width: 44px; height: 44px; }
+            .dice-3d .face { width: 44px; height: 44px; border-radius: 8px; }
+            .dice-3d .face-front  { transform: translateZ(22px); }
+            .dice-3d .face-back   { transform: rotateY(180deg) translateZ(22px); }
+            .dice-3d .face-right  { transform: rotateY(90deg) translateZ(22px); }
+            .dice-3d .face-left   { transform: rotateY(-90deg) translateZ(22px); }
+            .dice-3d .face-top    { transform: rotateX(90deg) translateZ(22px); }
+            .dice-3d .face-bottom { transform: rotateX(-90deg) translateZ(22px); }
+            .face .dot-grid { width: 38px; height: 38px; padding: 4px; gap: 2px; }
+            .face .dot { max-width: 10px; max-height: 10px; }
+            .btn-roll { font-size: 15px; padding: 6px 16px; }
+            .player-list { font-size: 13px; }
+            .setup-overlay, .game-over-overlay { padding: 16px; min-width: 160px; }
+        }
+    </style>
 </head>
 <body>
 
-<div id="startScreen">
-    <img src="hiii.gif" alt="Spaceship GIF">
-    <button id="playBtn">ᴄᴏᴍᴇ ᴀɴᴅ ᴘʟᴀʏ ᴡɪᴛʜ ᴋᴀʟɪᴍ!</button>
-</div>
+    <div class="game-wrapper">
+        <div class="board-container">
+            <canvas id="boardCanvas" width="800" height="800"></canvas>
 
-<script>
-document.getElementById('playBtn').onclick = () => {
-    // Go to your main game page
-    window.location.href = "starts.html";
-};
-</script>
+            <!-- SETUP OVERLAY -->
+            <div class="setup-overlay" id="setupOverlay">
+                <h1>🐍 Snakes & Ladders</h1>
+                <div class="subtitle">Multiplayer – up to 5 players</div>
+                <div class="setup-row">
+                    <label for="playerCount">Players:</label>
+                    <select id="playerCount">
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div class="player-setup" id="playerSetupContainer"></div>
+                <button class="btn-start" id="startGameBtn">🎮 Start Game</button>
+            </div>
 
+            <!-- GAME OVER OVERLAY -->
+            <div class="game-over-overlay hidden" id="gameOverOverlay">
+                <div class="title" id="overlayTitle">🎉 Winner!</div>
+                <div class="sub" id="overlaySub">Congratulations!</div>
+                <button class="btn-restart" id="restartBtn">🔄 Play Again</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="player-list" id="playerList"></div>
+            <div class="dice-area">
+                <!-- 3D DICE -->
+                <div class="dice-3d-container">
+                    <div class="dice-3d" id="dice3d">
+                        <div class="face face-front face-1">
+                            <div class="dot-grid"><div class="dot a"></div></div>
+                        </div>
+                        <div class="face face-back face-6">
+                            <div class="dot-grid"><div class="dot a"></div><div class="dot b"></div><div class="dot c"></div><div class="dot d"></div><div class="dot e"></div><div class="dot f"></div></div>
+                        </div>
+                        <div class="face face-right face-3">
+                            <div class="dot-grid"><div class="dot a"></div><div class="dot b"></div><div class="dot c"></div></div>
+                        </div>
+                        <div class="face face-left face-4">
+                            <div class="dot-grid"><div class="dot a"></div><div class="dot b"></div><div class="dot c"></div><div class="dot d"></div></div>
+                        </div>
+                        <div class="face face-top face-2">
+                            <div class="dot-grid"><div class="dot a"></div><div class="dot b"></div></div>
+                        </div>
+                        <div class="face face-bottom face-5">
+                            <div class="dot-grid"><div class="dot a"></div><div class="dot b"></div><div class="dot c"></div><div class="dot d"></div><div class="dot e"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-roll" id="rollBtn">🎲 Roll</button>
+            </div>
+            <div class="status-msg" id="statusMsg">Ready!</div>
+        </div>
+    </div>
+
+    <script>
+        // ----- AUDIO CONTEXT (for sound effects) -----
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playDiceSound() {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } catch (_) {}
+        }
+
+        function playMoveSound() {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.06);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.06);
+            } catch (_) {}
+        }
+
+        function playLadderSound() {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } catch (_) {}
+        }
+
+        function playSnakeSound() {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(550, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } catch (_) {}
+        }
+
+        function playWinSound() {
+            if (!audioCtx) return;
+            try {
+                [523, 659, 784, 1047].forEach((freq, i) => {
+                    setTimeout(() => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.2);
+                    }, i * 130);
+                });
+            } catch (_) {}
+        }
+
+        // ----- GAME CONFIG (larger board: 800x800 canvas) -----
+        const BOARD_SIZE = 10;
+        const TOTAL_SQUARES = 100;
+        const SNAKES = { 16: 6, 47: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78 };
+        const LADDERS = { 1: 38, 4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 80: 100 };
+        const EMOJIS = ['🧍', '🧚', '🧞', '🧍🏼‍♀️', '🧍🏿‍♂️'];
+
+        // ----- DOM REFS -----
+        const canvas = document.getElementById('boardCanvas');
+        const ctx = canvas.getContext('2d');
+        const dice3d = document.getElementById('dice3d');
+        const rollBtn = document.getElementById('rollBtn');
+        const statusMsg = document.getElementById('statusMsg');
+        const playerListEl = document.getElementById('playerList');
+        const overlay = document.getElementById('gameOverOverlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlaySub = document.getElementById('overlaySub');
+        const restartBtn = document.getElementById('restartBtn');
+        const setupOverlay = document.getElementById('setupOverlay');
+        const playerCountSelect = document.getElementById('playerCount');
+        const playerSetupContainer = document.getElementById('playerSetupContainer');
+        const startGameBtn = document.getElementById('startGameBtn');
+
+        // ----- GAME STATE -----
+        let players = [];
+        let currentPlayer = 0;
+        let isRolling = false;
+        let animating = false;
+        let gameOver = false;
+
+        // ----- 3D DICE MAPPING (face value -> rotation) -----
+        // Front=1, Right=3, Back=6, Left=4, Top=2, Bottom=5
+        // To show a face, we rotate so that face points to front (Z+).
+        const FACE_ROTATIONS = {
+            1: { x: 0, y: 0 },
+            2: { x: -90, y: 0 },
+            3: { x: 0, y: 90 },
+            4: { x: 0, y: -90 },
+            5: { x: 90, y: 0 },
+            6: { x: 0, y: 180 }
+        };
+
+        let currentDiceRotation = { x: 0, y: 0 };
+        let diceRolling = false;
+
+        function setDiceFace(value, animate = false) {
+            const rot = FACE_ROTATIONS[value];
+            if (!rot) return;
+            currentDiceRotation.x = rot.x;
+            currentDiceRotation.y = rot.y;
+            if (animate) {
+                dice3d.style.transition = 'transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.2)';
+            } else {
+                dice3d.style.transition = 'none';
+            }
+            dice3d.style.transform = `rotateX(${rot.x}deg) rotateY(${rot.y}deg)`;
+        }
+
+        // initial face 1
+        setDiceFace(1, false);
+
+        function rollDice3D(callback) {
+            if (diceRolling) return;
+            diceRolling = true;
+            const finalValue = Math.floor(Math.random() * 6) + 1;
+            const targetRot = FACE_ROTATIONS[finalValue];
+
+            // Random extra spins (2-4 full rotations)
+            const extraX = (Math.floor(Math.random() * 3) + 2) * 360;
+            const extraY = (Math.floor(Math.random() * 3) + 2) * 360;
+
+            // Start from current rotation, add spins, then end at target
+            const startX = currentDiceRotation.x;
+            const startY = currentDiceRotation.y;
+
+            // We'll animate using JS to have fine control over the final position.
+            // Use a smooth step animation with easing.
+            const duration = 800 + Math.random() * 400;
+            const startTime = performance.now();
+
+            // We need to compute total rotation: from start to (start + extraX + extraY) then to target.
+            // But we want to end exactly at target, so we'll animate from start to target + spins.
+            const endX = targetRot.x + extraX * (targetRot.x >= 0 ? 1 : -1); // ensure sign
+            const endY = targetRot.y + extraY * (targetRot.y >= 0 ? 1 : -1);
+
+            // Simpler: we'll just set the transform with a large transition and hope it lands correctly.
+            // But to be precise, we'll use requestAnimationFrame and interpolate.
+            // I'll use a simpler approach: set a big transition and let CSS handle it.
+            // However, we need to know the exact final rotation to display the correct face.
+            // We'll set the final rotation to the target + many spins.
+            // Since CSS transition will overshoot and settle, we need to set the correct final value.
+            // I'll compute a final rotation that is targetRot + multiples of 360.
+            // But we also need to account for current rotation.
+            // Best: we set a keyframe animation or just use a large transition.
+
+            // For simplicity, I'll set the dice to a random spin and then set the final face.
+            // Since we need the user to see the 3D roll, I'll do this:
+            // 1. Set a random rotation with large spins.
+            // 2. After a delay, set the target rotation with a smooth transition.
+
+            // Step 1: random spin (no transition)
+            dice3d.style.transition = 'none';
+            const spinX = (Math.floor(Math.random() * 4) + 3) * 360 + Math.random() * 360;
+            const spinY = (Math.floor(Math.random() * 4) + 3) * 360 + Math.random() * 360;
+            dice3d.style.transform = `rotateX(${spinX}deg) rotateY(${spinY}deg)`;
+
+            // Step 2: after a short delay, transition to target with a bounce
+            setTimeout(() => {
+                dice3d.style.transition = 'transform 0.9s cubic-bezier(0.2, 0.8, 0.3, 1.3)';
+                const finalX = targetRot.x + (Math.floor(spinX / 360) * 360) * (targetRot.x >= 0 ? 1 : -1);
+                const finalY = targetRot.y + (Math.floor(spinY / 360) * 360) * (targetRot.y >= 0 ? 1 : -1);
+                // Actually, we just want to end at targetRot with enough spins to look realistic.
+                // We'll just set targetRot plus multiples of 360 based on the spin.
+                const spinsX = Math.floor(spinX / 360);
+                const spinsY = Math.floor(spinY / 360);
+                // Ensure we end at exactly targetRot (mod 360)
+                const endX = targetRot.x + spinsX * 360;
+                const endY = targetRot.y + spinsY * 360;
+                dice3d.style.transform = `rotateX(${endX}deg) rotateY(${endY}deg)`;
+                currentDiceRotation.x = targetRot.x;
+                currentDiceRotation.y = targetRot.y;
+                setTimeout(() => {
+                    diceRolling = false;
+                    callback(finalValue);
+                }, 1000);
+            }, 200);
+        }
+
+        // ----- SETUP: Generate player inputs -----
+        function generatePlayerSetup() {
+            const count = parseInt(playerCountSelect.value);
+            playerSetupContainer.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const div = document.createElement('div');
+                div.className = 'player-entry';
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = 'emoji-display';
+                emojiSpan.textContent = EMOJIS[i] || '🧍';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Player ${i+1} name`;
+                input.value = `Player ${i+1}`;
+                input.dataset.index = i;
+                div.appendChild(emojiSpan);
+                div.appendChild(input);
+                playerSetupContainer.appendChild(div);
+            }
+        }
+        generatePlayerSetup();
+        playerCountSelect.addEventListener('change', generatePlayerSetup);
+
+        // ----- START GAME -----
+        startGameBtn.addEventListener('click', () => {
+            initAudio();
+            const count = parseInt(playerCountSelect.value);
+            const inputs = playerSetupContainer.querySelectorAll('input');
+            players = [];
+            for (let i = 0; i < count; i++) {
+                const name = inputs[i]?.value.trim() || `Player ${i+1}`;
+                players.push({
+                    name: name,
+                    emoji: EMOJIS[i] || '🧍',
+                    pos: 1
+                });
+            }
+            setupOverlay.classList.add('hidden');
+            resetGame();
+        });
+
+        // ----- RESET / NEW GAME -----
+        function resetGame() {
+            for (let p of players) p.pos = 1;
+            currentPlayer = 0;
+            gameOver = false;
+            isRolling = false;
+            animating = false;
+            rollBtn.disabled = false;
+            setDiceFace(1, false);
+            statusMsg.textContent = `${players[0].name}'s turn`;
+            overlay.classList.add('hidden');
+            updateUI();
+            drawBoard();
+        }
+
+        // ----- DRAWING HELPERS (for 800x800 canvas) -----
+        function getSquareCenter(squareNum) {
+            const row = Math.floor((squareNum - 1) / BOARD_SIZE);
+            const col = (squareNum - 1) % BOARD_SIZE;
+            const x = col / BOARD_SIZE;
+            const y = 1 - (row / BOARD_SIZE);
+            return { x: x * 800 + 40, y: y * 800 - 40 };
+        }
+
+        // ----- REALISTIC SNAKE (optimised for 800x800) -----
+        function drawRealisticSnake(headSquare, tailSquare) {
+            const from = getSquareCenter(headSquare);
+            const to = getSquareCenter(tailSquare);
+            const cp1x = from.x + (to.x - from.x) * 0.25 + (Math.random() - 0.5) * 60;
+            const cp1y = from.y + (to.y - from.y) * 0.25 + (Math.random() - 0.5) * 60 - 20;
+            const cp2x = from.x + (to.x - from.x) * 0.75 + (Math.random() - 0.5) * 60;
+            const cp2y = from.y + (to.y - from.y) * 0.75 + (Math.random() - 0.5) * 60 + 20;
+            const points = [];
+            const seg = 35;
+            for (let i = 0; i <= seg; i++) {
+                const t = i / seg;
+                const x = Math.pow(1 - t, 3) * from.x + 3 * Math.pow(1 - t, 2) * t * cp1x +
+                    3 * (1 - t) * Math.pow(t, 2) * cp2x + Math.pow(t, 3) * to.x;
+                const y = Math.pow(1 - t, 3) * from.y + 3 * Math.pow(1 - t, 2) * t * cp1y +
+                    3 * (1 - t) * Math.pow(t, 2) * cp2y + Math.pow(t, 3) * to.y;
+                points.push({ x, y });
+            }
+            for (let i = 0; i < points.length; i++) {
+                const p = points[i];
+                const progress = i / points.length;
+                const radius = (i < 6) ? 18 - i * 0.8 : 16 * (1 - progress) + 5;
+                const r = 25 + 35 * (1 - progress);
+                const g = 90 + 90 * (1 - progress);
+                const b = 20 + 25 * (1 - progress);
+                ctx.shadowColor = 'rgba(0,0,0,0.25)';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            for (let i = 10; i < points.length - 10; i += 5) {
+                const p = points[i];
+                const progress = i / points.length;
+                const radius = (i < 6) ? 14 - i * 0.6 : 12 * (1 - progress) + 4;
+                const angle = Math.atan2(points[i + 1].y - points[i - 1].y, points[i + 1].x - points[i - 1].x);
+                const sAngle = angle + Math.PI / 2;
+                const scaleSize = radius * 0.45;
+                ctx.beginPath();
+                ctx.arc(p.x + Math.cos(angle) * 1.5, p.y + Math.sin(angle) * 1.5, scaleSize, sAngle - 0.5, sAngle + 0.5);
+                ctx.strokeStyle = 'rgba(0, 50, 0, 0.3)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+            if (points.length > 4) {
+                const tail = points[points.length - 1];
+                const prev = points[points.length - 2];
+                const angle = Math.atan2(tail.y - prev.y, tail.x - prev.x);
+                const len = 16;
+                ctx.beginPath();
+                ctx.moveTo(tail.x - Math.cos(angle) * 4, tail.y - Math.sin(angle) * 4);
+                ctx.quadraticCurveTo(
+                    tail.x + Math.cos(angle + 0.7) * len,
+                    tail.y + Math.sin(angle + 0.7) * len,
+                    tail.x + Math.cos(angle) * (len + 5),
+                    tail.y + Math.sin(angle) * (len + 5)
+                );
+                ctx.quadraticCurveTo(
+                    tail.x + Math.cos(angle - 0.7) * len,
+                    tail.y + Math.sin(angle - 0.7) * len,
+                    tail.x - Math.cos(angle) * 4, tail.y - Math.sin(angle) * 4
+                );
+                ctx.fillStyle = '#2e7d32';
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            const head = points[0];
+            const next = points[2] || points[1];
+            const angle = Math.atan2(next.y - head.y, next.x - head.x);
+            const headLen = 24;
+            const headWid = 17;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            const hx = head.x,
+                hy = head.y;
+            const cosA = Math.cos(angle),
+                sinA = Math.sin(angle);
+            ctx.moveTo(hx + cosA * headLen, hy + sinA * headLen);
+            ctx.quadraticCurveTo(
+                hx + cosA * (headLen * 0.5) - sinA * headWid,
+                hy + sinA * (headLen * 0.5) + cosA * headWid,
+                hx - cosA * (headLen * 0.3) - sinA * (headWid * 0.5),
+                hy - sinA * (headLen * 0.3) + cosA * (headWid * 0.5)
+            );
+            ctx.quadraticCurveTo(
+                hx - cosA * (headLen * 0.5) + sinA * headWid,
+                hy - sinA * (headLen * 0.5) - cosA * headWid,
+                hx + cosA * (headLen * 0.15), hy + sinA * (headLen * 0.15)
+            );
+            ctx.closePath();
+            const headGrad = ctx.createRadialGradient(hx - 4, hy - 4, 5, hx, hy, headLen);
+            headGrad.addColorStop(0, '#4caf50');
+            headGrad.addColorStop(0.7, '#2e7d32');
+            headGrad.addColorStop(1, '#1b5e20');
+            ctx.fillStyle = headGrad;
+            ctx.fill();
+            ctx.strokeStyle = '#1b5e20';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            const eyeOff = 8;
+            const eyeR = 5.5;
+            for (let side = -1; side <= 1; side += 2) {
+                const ex = hx + Math.cos(angle + side * 0.55) * eyeOff;
+                const ey = hy + Math.sin(angle + side * 0.55) * eyeOff;
+                ctx.beginPath();
+                ctx.ellipse(ex, ey, eyeR, eyeR * 0.85, angle + side * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = '#f5f5dc';
+                ctx.fill();
+                ctx.strokeStyle = '#222';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+                const pupilOff = 3.5;
+                const px = ex + Math.cos(angle + side * 0.35) * pupilOff;
+                const py = ey + Math.sin(angle + side * 0.35) * pupilOff;
+                ctx.beginPath();
+                ctx.ellipse(px, py, 2.5, 1.5, angle + side * 0.35, 0, Math.PI * 2);
+                ctx.fillStyle = '#111';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(px - 1.5, py - 2, 1.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                ctx.fill();
+            }
+            const tBase = headLen + 2;
+            const tLen = 22;
+            const fork = 10;
+            const tAngle = angle;
+            const bx = hx + Math.cos(tAngle) * tBase;
+            const by = hy + Math.sin(tAngle) * tBase;
+            const tx = bx + Math.cos(tAngle) * tLen;
+            const ty = by + Math.sin(tAngle) * tLen;
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = 'rgba(0,0,0,0.15)';
+            ctx.strokeStyle = '#d32f2f';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(bx, by);
+            ctx.lineTo(tx, ty);
+            ctx.stroke();
+            const fA = 0.55;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(tx, ty);
+            ctx.lineTo(tx + Math.cos(tAngle - fA) * fork, ty + Math.sin(tAngle - fA) * fork);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(tx, ty);
+            ctx.lineTo(tx + Math.cos(tAngle + fA) * fork, ty + Math.sin(tAngle + fA) * fork);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        // ----- DRAW BOARD (800x800) -----
+        function drawBoard() {
+            const W = 800,
+                H = 800;
+            ctx.clearRect(0, 0, W, H);
+            const grad = ctx.createLinearGradient(0, 0, W, H);
+            grad.addColorStop(0, '#d4a373');
+            grad.addColorStop(1, '#bc8f4f');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+            ctx.globalAlpha = 0.07;
+            for (let i = 0; i < 30; i++) {
+                const x = Math.random() * W,
+                    y = Math.random() * H;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + 20 + Math.random() * 30, y + 5 + Math.random() * 12);
+                ctx.strokeStyle = '#7f5f3f';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = '#7f5f3f';
+            ctx.lineWidth = 2;
+            for (let i = 0; i <= BOARD_SIZE; i++) {
+                const pos = i * 80;
+                ctx.beginPath();
+                ctx.moveTo(pos, 0);
+                ctx.lineTo(pos, H);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, pos);
+                ctx.lineTo(W, pos);
+                ctx.stroke();
+            }
+            ctx.font = 'bold 18px "Segoe UI", Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (let i = 1; i <= TOTAL_SQUARES; i++) {
+                const row = Math.floor((i - 1) / BOARD_SIZE);
+                const col = (i - 1) % BOARD_SIZE;
+                const x = col * 80 + 40;
+                const y = (BOARD_SIZE - 1 - row) * 80 + 40;
+                ctx.fillStyle = '#3d2b1f';
+                ctx.globalAlpha = 0.4;
+                ctx.fillText(i, x, y + 1);
+                ctx.globalAlpha = 0.9;
+                ctx.fillStyle = '#f7efe2';
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 4;
+                ctx.fillText(i, x, y);
+                ctx.shadowBlur = 0;
+            }
+            for (let head in SNAKES) drawRealisticSnake(parseInt(head), SNAKES[head]);
+            ctx.lineWidth = 6;
+            ctx.shadowBlur = 0;
+            for (let bottom in LADDERS) {
+                const top = LADDERS[bottom];
+                const from = getSquareCenter(parseInt(bottom));
+                const to = getSquareCenter(top);
+                const dx = to.x - from.x,
+                    dy = to.y - from.y;
+                const len = Math.sqrt(dx * dx + dy * dy);
+                const nx = -dy / len,
+                    ny = dx / len;
+                const off = 9;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                ctx.moveTo(from.x + nx * off, from.y + ny * off);
+                ctx.lineTo(to.x + nx * off, to.y + ny * off);
+                ctx.strokeStyle = '#b8860b';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(from.x - nx * off, from.y - ny * off);
+                ctx.lineTo(to.x - nx * off, to.y - ny * off);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                for (let r = 0; r <= 5; r++) {
+                    const t = r / 5;
+                    const px = from.x + dx * t,
+                        py = from.y + dy * t;
+                    ctx.beginPath();
+                    ctx.moveTo(px + nx * off, py + ny * off);
+                    ctx.lineTo(px - nx * off, py - ny * off);
+                    ctx.strokeStyle = '#daa520';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(255,215,0,0.1)';
+                ctx.beginPath();
+                ctx.arc(to.x, to.y, 14, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,215,0,0.08)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            for (let i = 0; i < players.length; i++) drawToken(i);
+        }
+
+        function drawToken(index) {
+            const p = players[index];
+            const center = getSquareCenter(p.pos);
+            const fontSize = 48;
+            ctx.shadowColor = 'rgba(0,0,0,0.6)';
+            ctx.shadowBlur = 18;
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, 30, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.fill();
+            ctx.strokeStyle = '#2c2c2c';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.shadowBlur = 6;
+            ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif`;
+            ctx.fillText(p.emoji, center.x, center.y + 1);
+            ctx.shadowBlur = 0;
+        }
+
+        // ----- ANIMATION: step by step (with visible tokens) -----
+        function animateMove(playerIdx, steps, callback) {
+            if (steps === 0) { callback(); return; }
+            const p = players[playerIdx];
+            let currentStep = p.pos;
+            const stepDirection = steps > 0 ? 1 : -1;
+            const totalSteps = Math.abs(steps);
+            let stepCount = 0;
+
+            function stepForward() {
+                if (stepCount >= totalSteps) {
+                    p.pos = currentStep;
+                    drawBoard();
+                    callback();
+                    return;
+                }
+                const nextPos = currentStep + stepDirection;
+                const from = getSquareCenter(currentStep);
+                const to = getSquareCenter(nextPos);
+                const duration = 110;
+                const startTime = performance.now();
+
+                function singleStepAnim(time) {
+                    const progress = Math.min((time - startTime) / duration, 1);
+                    const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+                    const x = from.x + (to.x - from.x) * ease;
+                    const y = from.y + (to.y - from.y) * ease;
+                    drawBoard();
+                    // draw moving token
+                    const fontSize = 48;
+                    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                    ctx.shadowBlur = 18;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 30, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#2c2c2c';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                    ctx.shadowBlur = 6;
+                    ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif`;
+                    ctx.fillText(p.emoji, x, y + 1);
+                    ctx.shadowBlur = 0;
+                    if (progress < 1) {
+                        requestAnimationFrame(singleStepAnim);
+                    } else {
+                        currentStep = nextPos;
+                        stepCount++;
+                        playMoveSound();
+                        p.pos = nextPos;
+                        drawBoard();
+                        setTimeout(stepForward, 45);
+                    }
+                }
+                requestAnimationFrame(singleStepAnim);
+            }
+            stepForward();
+        }
+
+        // ----- CHECK SNAKES & LADDERS -----
+        function checkSnakeOrLadder(playerIdx, callback) {
+            const p = players[playerIdx];
+            const pos = p.pos;
+            let target = null,
+                isSnake = false,
+                isLadder = false;
+            if (SNAKES[pos]) { target = SNAKES[pos];
+                isSnake = true; } else if (LADDERS[pos]) { target = LADDERS[pos];
+                isLadder = true; }
+            if (target) {
+                p.pos = target;
+                if (isSnake) { playSnakeSound();
+                    statusMsg.textContent = '🐍 Snake!'; } else { playLadderSound();
+                    statusMsg.textContent = '🪜 Ladder!'; }
+                drawBoard();
+                setTimeout(() => {
+                    drawBoard();
+                    callback(target);
+                }, 320);
+            } else {
+                callback(pos);
+            }
+        }
+
+        // ----- TURN PROCESSING -----
+        function processTurn(diceVal) {
+            const p = players[currentPlayer];
+            const startPos = p.pos;
+            let newPos = startPos + diceVal;
+            if (newPos > TOTAL_SQUARES) {
+                const overshoot = newPos - TOTAL_SQUARES;
+                newPos = TOTAL_SQUARES - overshoot;
+                statusMsg.textContent = `${p.name} bounced to ${newPos}`;
+            } else {
+                statusMsg.textContent = `${p.name} moved to ${newPos}`;
+            }
+            const steps = newPos - startPos;
+            animating = true;
+            rollBtn.disabled = true;
+
+            function afterMove() {
+                if (p.pos === TOTAL_SQUARES) {
+                    gameOver = true;
+                    playWinSound();
+                    showOverlay(p);
+                    rollBtn.disabled = true;
+                    animating = false;
+                    isRolling = false;
+                    return;
+                }
+                checkSnakeOrLadder(currentPlayer, (finalPos) => {
+                    p.pos = finalPos;
+                    updateUI();
+                    if (p.pos === TOTAL_SQUARES) {
+                        gameOver = true;
+                        playWinSound();
+                        showOverlay(p);
+                        rollBtn.disabled = true;
+                        animating = false;
+                        isRolling = false;
+                        return;
+                    }
+                    currentPlayer = (currentPlayer + 1) % players.length;
+                    animating = false;
+                    isRolling = false;
+                    updateUI();
+                    if (!gameOver) {
+                        statusMsg.textContent = `${players[currentPlayer].name}'s turn`;
+                        rollBtn.disabled = false;
+                    }
+                });
+            }
+
+            if (steps === 0) { afterMove(); } else { animateMove(currentPlayer, steps, afterMove); }
+        }
+
+        // ----- OVERLAY -----
+        function showOverlay(winner) {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('win');
+            overlayTitle.textContent = `🎉 ${winner.name} Wins! 🎉`;
+            overlaySub.textContent = `${winner.emoji} reached 100 first!`;
+        }
+
+        // ----- ROLL (with 3D dice) -----
+        function rollDice() {
+            if (isRolling || animating || gameOver) return;
+            initAudio();
+            isRolling = true;
+            rollBtn.disabled = true;
+            statusMsg.textContent = `${players[currentPlayer].name} rolling...`;
+            playDiceSound();
+
+            rollDice3D((value) => {
+                // Dice finished rolling
+                processTurn(value);
+                isRolling = false;
+            });
+        }
+
+        // ----- UI UPDATE -----
+        function updateUI() {
+            playerListEl.innerHTML = '';
+            for (let i = 0; i < players.length; i++) {
+                const p = players[i];
+                const span = document.createElement('span');
+                span.className = 'p-item' + (i === currentPlayer ? ' active' : '');
+                span.innerHTML = `<span class="emoji">${p.emoji}</span> ${p.name} <span class="pos">(${p.pos})</span>`;
+                playerListEl.appendChild(span);
+            }
+            drawBoard();
+        }
+
+        // ----- RESTART -----
+        restartBtn.addEventListener('click', () => {
+            resetGame();
+        });
+
+        // ----- KEYBOARD -----
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                if (!setupOverlay.classList.contains('hidden')) return;
+                if (gameOver) {
+                    resetGame();
+                } else if (!isRolling && !animating) {
+                    rollDice();
+                }
+            }
+        });
+
+        // ----- INIT -----
+        rollBtn.addEventListener('click', rollDice);
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const maxW = container.clientWidth;
+            if (maxW < 800) {
+                canvas.style.width = maxW + 'px';
+                canvas.style.height = maxW + 'px';
+            } else {
+                canvas.style.width = '800px';
+                canvas.style.height = '800px';
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        console.log('🐍 Big Board + 3D Dice loaded!');
+        console.log('Characters have a white background – easy to spot.');
+    </script>
 </body>
 </html>
