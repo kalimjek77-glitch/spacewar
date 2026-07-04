@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Snakes & Ladders · Big Board + 3D Dice</title>
+    <title>Snakes & Ladders · Big Board + HD 3D Dice</title>
     <style>
         * {
             margin: 0;
@@ -57,104 +57,230 @@
             touch-action: none;
         }
 
-        /* ----- 3D DICE (replaces old dice) ----- */
+        /* ===== 3D DICE – HD REALISTIC ===== */
         .dice-3d-container {
-            width: 70px;
-            height: 70px;
-            perspective: 400px;
+            width: 76px;
+            height: 76px;
+            perspective: 500px;
             flex-shrink: 0;
+            position: relative;
         }
+        /* Ground shadow */
+        .dice-3d-container::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 14px;
+            background: radial-gradient(ellipse, rgba(0, 0, 0, 0.45) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(6px);
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .dice-3d-container.rolling::after {
+            opacity: 0.7;
+            width: 80px;
+            height: 18px;
+            bottom: -10px;
+        }
+
         .dice-3d {
             width: 100%;
             height: 100%;
             position: relative;
             transform-style: preserve-3d;
-            transform: rotateX(0deg) rotateY(0deg);
-            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+            transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+            transition: none;
             will-change: transform;
         }
-        .dice-3d.rolling {
-            transition: transform 0.15s linear;
-        }
+
         .dice-3d .face {
             position: absolute;
-            width: 70px;
-            height: 70px;
-            border-radius: 12px;
-            background: #fcf9f2;
-            border: 2px solid #ccc;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            width: 76px;
+            height: 76px;
+            border-radius: 14px;
+            backface-visibility: visible;
             display: flex;
             align-items: center;
             justify-content: center;
-            backface-visibility: visible;
-            font-size: 30px;
-            font-weight: 900;
-            color: #1a1410;
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.08), inset 0 -6px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
-        /* Face positions */
-        .dice-3d .face-front  { transform: translateZ(35px); }
-        .dice-3d .face-back   { transform: rotateY(180deg) translateZ(35px); }
-        .dice-3d .face-right  { transform: rotateY(90deg) translateZ(35px); }
-        .dice-3d .face-left   { transform: rotateY(-90deg) translateZ(35px); }
-        .dice-3d .face-top    { transform: rotateX(90deg) translateZ(35px); }
-        .dice-3d .face-bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-        /* Dots pattern using CSS */
+        /* Face positions */
+        .dice-3d .face-front {
+            transform: translateZ(38px);
+            background: linear-gradient(145deg, #fefcf5, #ece6d8);
+        }
+        .dice-3d .face-back {
+            transform: rotateY(180deg) translateZ(38px);
+            background: linear-gradient(145deg, #f0ebe0, #ddd7c8);
+        }
+        .dice-3d .face-right {
+            transform: rotateY(90deg) translateZ(38px);
+            background: linear-gradient(145deg, #faf7ee, #e8e2d4);
+        }
+        .dice-3d .face-left {
+            transform: rotateY(-90deg) translateZ(38px);
+            background: linear-gradient(145deg, #f5f1e6, #e3ddcf);
+        }
+        .dice-3d .face-top {
+            transform: rotateX(90deg) translateZ(38px);
+            background: linear-gradient(145deg, #fffdf7, #f0eadc);
+        }
+        .dice-3d .face-bottom {
+            transform: rotateX(-90deg) translateZ(38px);
+            background: linear-gradient(145deg, #e8e2d4, #d5cfc0);
+        }
+
+        /* Face edge glow */
+        .dice-3d .face::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 11px;
+            background: transparent;
+            box-shadow: inset 0 0 20px rgba(255, 215, 140, 0.06);
+            pointer-events: none;
+        }
+
+        /* Dots grid – HD with depth */
         .face .dot-grid {
             display: grid;
-            width: 60px;
-            height: 60px;
-            padding: 8px;
+            width: 66px;
+            height: 66px;
+            padding: 10px;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 4px;
+            gap: 3px;
         }
         .face .dot {
             border-radius: 50%;
-            background: #1a1410;
             width: 100%;
             height: 100%;
-            max-width: 14px;
-            max-height: 14px;
+            max-width: 15px;
+            max-height: 15px;
             place-self: center;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            background: radial-gradient(circle at 35% 30%, #3a2a1a, #1a1410 80%);
+            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+            transform: translateZ(1px);
+            transition: none;
         }
-        .face .dot.empty { background: transparent; box-shadow: none; }
+        .face .dot.empty {
+            background: transparent;
+            box-shadow: none;
+            transform: none;
+        }
 
-        /* Predefined dot layouts */
-        .face-1 .dot-grid { grid-template-areas: ". . ." ". a ." ". . ."; }
-        .face-2 .dot-grid { grid-template-areas: "a . ." ". . ." ". . b"; }
-        .face-3 .dot-grid { grid-template-areas: "a . ." ". b ." ". . c"; }
-        .face-4 .dot-grid { grid-template-areas: "a . b" ". . ." "c . d"; }
-        .face-5 .dot-grid { grid-template-areas: "a . b" ". c ." "d . e"; }
-        .face-6 .dot-grid { grid-template-areas: "a . b" "c . d" "e . f"; }
+        /* Dot layouts */
+        .face-1 .dot-grid {
+            grid-template-areas: ". . ." ". a ." ". . .";
+        }
+        .face-2 .dot-grid {
+            grid-template-areas: "a . ." ". . ." ". . b";
+        }
+        .face-3 .dot-grid {
+            grid-template-areas: "a . ." ". b ." ". . c";
+        }
+        .face-4 .dot-grid {
+            grid-template-areas: "a . b" ". . ." "c . d";
+        }
+        .face-5 .dot-grid {
+            grid-template-areas: "a . b" ". c ." "d . e";
+        }
+        .face-6 .dot-grid {
+            grid-template-areas: "a . b" "c . d" "e . f";
+        }
 
-        .face .dot { grid-area: auto; }
-        .face-1 .dot.a { grid-area: a; }
-        .face-2 .dot.a { grid-area: a; }
-        .face-2 .dot.b { grid-area: b; }
-        .face-3 .dot.a { grid-area: a; }
-        .face-3 .dot.b { grid-area: b; }
-        .face-3 .dot.c { grid-area: c; }
-        .face-4 .dot.a { grid-area: a; }
-        .face-4 .dot.b { grid-area: b; }
-        .face-4 .dot.c { grid-area: c; }
-        .face-4 .dot.d { grid-area: d; }
-        .face-5 .dot.a { grid-area: a; }
-        .face-5 .dot.b { grid-area: b; }
-        .face-5 .dot.c { grid-area: c; }
-        .face-5 .dot.d { grid-area: d; }
-        .face-5 .dot.e { grid-area: e; }
-        .face-6 .dot.a { grid-area: a; }
-        .face-6 .dot.b { grid-area: b; }
-        .face-6 .dot.c { grid-area: c; }
-        .face-6 .dot.d { grid-area: d; }
-        .face-6 .dot.e { grid-area: e; }
-        .face-6 .dot.f { grid-area: f; }
+        .face .dot {
+            grid-area: auto;
+        }
+        .face-1 .dot.a {
+            grid-area: a;
+        }
+        .face-2 .dot.a {
+            grid-area: a;
+        }
+        .face-2 .dot.b {
+            grid-area: b;
+        }
+        .face-3 .dot.a {
+            grid-area: a;
+        }
+        .face-3 .dot.b {
+            grid-area: b;
+        }
+        .face-3 .dot.c {
+            grid-area: c;
+        }
+        .face-4 .dot.a {
+            grid-area: a;
+        }
+        .face-4 .dot.b {
+            grid-area: b;
+        }
+        .face-4 .dot.c {
+            grid-area: c;
+        }
+        .face-4 .dot.d {
+            grid-area: d;
+        }
+        .face-5 .dot.a {
+            grid-area: a;
+        }
+        .face-5 .dot.b {
+            grid-area: b;
+        }
+        .face-5 .dot.c {
+            grid-area: c;
+        }
+        .face-5 .dot.d {
+            grid-area: d;
+        }
+        .face-5 .dot.e {
+            grid-area: e;
+        }
+        .face-6 .dot.a {
+            grid-area: a;
+        }
+        .face-6 .dot.b {
+            grid-area: b;
+        }
+        .face-6 .dot.c {
+            grid-area: c;
+        }
+        .face-6 .dot.d {
+            grid-area: d;
+        }
+        .face-6 .dot.e {
+            grid-area: e;
+        }
+        .face-6 .dot.f {
+            grid-area: f;
+        }
 
-        /* ----- OVERLAYS (setup, game over) ----- */
-        .setup-overlay, .game-over-overlay {
+        /* Shine reflection on dice */
+        .dice-3d::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 15%;
+            width: 40%;
+            height: 20%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.35) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: rotate(-20deg);
+            opacity: 0.6;
+            filter: blur(2px);
+        }
+
+        /* ===== OVERLAYS ===== */
+        .setup-overlay,
+        .game-over-overlay {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -173,7 +299,8 @@
             width: 90%;
             max-width: 420px;
         }
-        .setup-overlay.hidden, .game-over-overlay.hidden {
+        .setup-overlay.hidden,
+        .game-over-overlay.hidden {
             display: none;
         }
         .setup-overlay h1 {
@@ -193,18 +320,26 @@
             gap: 10px 16px;
             margin: 6px 0;
         }
-        .setup-row label { font-weight: 600; font-size: 16px; }
-        .setup-row select, .setup-row input {
+        .setup-row label {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .setup-row select,
+        .setup-row input {
             padding: 6px 12px;
             border-radius: 20px;
             border: none;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             color: #fff;
             font-size: 16px;
             backdrop-filter: blur(4px);
         }
-        .setup-row select option { background: #1a1410; }
-        .setup-row input::placeholder { color: rgba(255,255,255,0.5); }
+        .setup-row select option {
+            background: #1a1410;
+        }
+        .setup-row input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
         .player-setup {
             display: flex;
             flex-direction: column;
@@ -216,22 +351,28 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255,255,255,0.06);
+            background: rgba(255, 255, 255, 0.06);
             padding: 6px 12px;
             border-radius: 30px;
         }
-        .player-setup .player-entry .emoji-display { font-size: 28px; width: 40px; text-align: center; }
+        .player-setup .player-entry .emoji-display {
+            font-size: 28px;
+            width: 40px;
+            text-align: center;
+        }
         .player-setup .player-entry input {
             flex: 1;
             background: transparent;
             border: none;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
             color: #fff;
             font-size: 16px;
             padding: 6px 4px;
             outline: none;
         }
-        .player-setup .player-entry input:focus { border-bottom-color: #ffd700; }
+        .player-setup .player-entry input:focus {
+            border-bottom-color: #ffd700;
+        }
         .btn-start {
             background: #f1c40f;
             border: none;
@@ -246,11 +387,25 @@
             text-transform: uppercase;
             margin-top: 6px;
         }
-        .btn-start:hover { background: #ffdb4f; transform: scale(1.02); }
-        .btn-start:active { transform: translateY(4px); box-shadow: 0 1px 0 #b38f0a; }
+        .btn-start:hover {
+            background: #ffdb4f;
+            transform: scale(1.02);
+        }
+        .btn-start:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #b38f0a;
+        }
 
-        .game-over-overlay .title { font-size: 36px; font-weight: 900; margin-bottom: 4px; }
-        .game-over-overlay .sub { font-size: 18px; opacity: 0.7; margin-bottom: 14px; }
+        .game-over-overlay .title {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+        .game-over-overlay .sub {
+            font-size: 18px;
+            opacity: 0.7;
+            margin-bottom: 14px;
+        }
         .game-over-overlay .btn-restart {
             background: #f1c40f;
             border: none;
@@ -264,11 +419,19 @@
             transition: all 0.08s ease;
             text-transform: uppercase;
         }
-        .game-over-overlay .btn-restart:hover { background: #ffdb4f; transform: scale(1.03); }
-        .game-over-overlay .btn-restart:active { transform: translateY(4px); box-shadow: 0 1px 0 #b38f0a; }
-        .game-over-overlay.win .title { color: #f1c40f; }
+        .game-over-overlay .btn-restart:hover {
+            background: #ffdb4f;
+            transform: scale(1.03);
+        }
+        .game-over-overlay .btn-restart:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #b38f0a;
+        }
+        .game-over-overlay.win .title {
+            color: #f1c40f;
+        }
 
-        /* ----- SIDEBAR ----- */
+        /* ===== SIDEBAR ===== */
         .sidebar {
             display: flex;
             flex-wrap: wrap;
@@ -300,9 +463,18 @@
             gap: 4px;
             white-space: nowrap;
         }
-        .player-list .p-item .emoji { font-size: 22px; }
-        .player-list .p-item .pos { opacity: 0.6; font-weight: 400; margin-left: 2px; }
-        .player-list .p-item.active { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .player-list .p-item .emoji {
+            font-size: 22px;
+        }
+        .player-list .p-item .pos {
+            opacity: 0.6;
+            font-weight: 400;
+            margin-left: 2px;
+        }
+        .player-list .p-item.active {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
 
         .dice-area {
             display: flex;
@@ -325,8 +497,14 @@
             text-transform: uppercase;
             white-space: nowrap;
         }
-        .btn-roll:hover:not(:disabled) { background: #ffdb4f; transform: scale(1.03); }
-        .btn-roll:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #b38f0a; }
+        .btn-roll:hover:not(:disabled) {
+            background: #ffdb4f;
+            transform: scale(1.03);
+        }
+        .btn-roll:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #b38f0a;
+        }
         .btn-roll:disabled {
             opacity: 0.3;
             transform: translateY(4px);
@@ -346,46 +524,156 @@
             min-width: 80px;
         }
 
-        /* Responsive */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 700px) {
-            .game-wrapper { padding: 10px; border-radius: 20px; }
-            .board-container { padding: 6px; }
-            .dice-3d-container { width: 56px; height: 56px; }
-            .dice-3d .face { width: 56px; height: 56px; border-radius: 10px; }
-            .dice-3d .face-front  { transform: translateZ(28px); }
-            .dice-3d .face-back   { transform: rotateY(180deg) translateZ(28px); }
-            .dice-3d .face-right  { transform: rotateY(90deg) translateZ(28px); }
-            .dice-3d .face-left   { transform: rotateY(-90deg) translateZ(28px); }
-            .dice-3d .face-top    { transform: rotateX(90deg) translateZ(28px); }
-            .dice-3d .face-bottom { transform: rotateX(-90deg) translateZ(28px); }
-            .face .dot-grid { width: 48px; height: 48px; padding: 6px; gap: 3px; }
-            .face .dot { max-width: 12px; max-height: 12px; }
-            .sidebar { flex-direction: column; align-items: stretch; gap: 10px; }
-            .player-list { font-size: 14px; padding: 5px 12px; gap: 6px 12px; }
-            .dice-area { justify-content: center; }
-            .btn-roll { font-size: 17px; padding: 8px 20px; }
-            .status-msg { font-size: 14px; min-width: 80px; }
-            .setup-overlay, .game-over-overlay { padding: 20px; min-width: 200px; }
-            .setup-overlay h1 { font-size: 22px; }
-            .game-over-overlay .title { font-size: 28px; }
-            .game-over-overlay .btn-restart { font-size: 17px; padding: 10px 26px; }
+            .game-wrapper {
+                padding: 10px;
+                border-radius: 20px;
+            }
+            .board-container {
+                padding: 6px;
+            }
+            .dice-3d-container {
+                width: 60px;
+                height: 60px;
+            }
+            .dice-3d .face {
+                width: 60px;
+                height: 60px;
+                border-radius: 11px;
+            }
+            .dice-3d .face-front {
+                transform: translateZ(30px);
+            }
+            .dice-3d .face-back {
+                transform: rotateY(180deg) translateZ(30px);
+            }
+            .dice-3d .face-right {
+                transform: rotateY(90deg) translateZ(30px);
+            }
+            .dice-3d .face-left {
+                transform: rotateY(-90deg) translateZ(30px);
+            }
+            .dice-3d .face-top {
+                transform: rotateX(90deg) translateZ(30px);
+            }
+            .dice-3d .face-bottom {
+                transform: rotateX(-90deg) translateZ(30px);
+            }
+            .face .dot-grid {
+                width: 52px;
+                height: 52px;
+                padding: 8px;
+                gap: 2px;
+            }
+            .face .dot {
+                max-width: 12px;
+                max-height: 12px;
+            }
+            .dice-3d-container::after {
+                width: 54px;
+                height: 10px;
+                bottom: -4px;
+            }
+            .sidebar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .player-list {
+                font-size: 14px;
+                padding: 5px 12px;
+                gap: 6px 12px;
+            }
+            .dice-area {
+                justify-content: center;
+            }
+            .btn-roll {
+                font-size: 17px;
+                padding: 8px 20px;
+            }
+            .status-msg {
+                font-size: 14px;
+                min-width: 80px;
+            }
+            .setup-overlay,
+            .game-over-overlay {
+                padding: 20px;
+                min-width: 200px;
+            }
+            .setup-overlay h1 {
+                font-size: 22px;
+            }
+            .game-over-overlay .title {
+                font-size: 28px;
+            }
+            .game-over-overlay .btn-restart {
+                font-size: 17px;
+                padding: 10px 26px;
+            }
         }
         @media (max-width: 420px) {
-            .game-wrapper { padding: 6px; }
-            .board-container { padding: 4px; }
-            .dice-3d-container { width: 44px; height: 44px; }
-            .dice-3d .face { width: 44px; height: 44px; border-radius: 8px; }
-            .dice-3d .face-front  { transform: translateZ(22px); }
-            .dice-3d .face-back   { transform: rotateY(180deg) translateZ(22px); }
-            .dice-3d .face-right  { transform: rotateY(90deg) translateZ(22px); }
-            .dice-3d .face-left   { transform: rotateY(-90deg) translateZ(22px); }
-            .dice-3d .face-top    { transform: rotateX(90deg) translateZ(22px); }
-            .dice-3d .face-bottom { transform: rotateX(-90deg) translateZ(22px); }
-            .face .dot-grid { width: 38px; height: 38px; padding: 4px; gap: 2px; }
-            .face .dot { max-width: 10px; max-height: 10px; }
-            .btn-roll { font-size: 15px; padding: 6px 16px; }
-            .player-list { font-size: 13px; }
-            .setup-overlay, .game-over-overlay { padding: 16px; min-width: 160px; }
+            .game-wrapper {
+                padding: 6px;
+            }
+            .board-container {
+                padding: 4px;
+            }
+            .dice-3d-container {
+                width: 48px;
+                height: 48px;
+            }
+            .dice-3d .face {
+                width: 48px;
+                height: 48px;
+                border-radius: 9px;
+            }
+            .dice-3d .face-front {
+                transform: translateZ(24px);
+            }
+            .dice-3d .face-back {
+                transform: rotateY(180deg) translateZ(24px);
+            }
+            .dice-3d .face-right {
+                transform: rotateY(90deg) translateZ(24px);
+            }
+            .dice-3d .face-left {
+                transform: rotateY(-90deg) translateZ(24px);
+            }
+            .dice-3d .face-top {
+                transform: rotateX(90deg) translateZ(24px);
+            }
+            .dice-3d .face-bottom {
+                transform: rotateX(-90deg) translateZ(24px);
+            }
+            .face .dot-grid {
+                width: 42px;
+                height: 42px;
+                padding: 6px;
+                gap: 2px;
+            }
+            .face .dot {
+                max-width: 10px;
+                max-height: 10px;
+            }
+            .dice-3d-container::after {
+                width: 42px;
+                height: 8px;
+                bottom: -2px;
+                filter: blur(4px);
+            }
+            .btn-roll {
+                font-size: 15px;
+                padding: 6px 16px;
+            }
+            .player-list {
+                font-size: 13px;
+            }
+            .setup-overlay,
+            .game-over-overlay {
+                padding: 16px;
+                min-width: 160px;
+            }
         }
     </style>
 </head>
@@ -424,7 +712,7 @@
             <div class="player-list" id="playerList"></div>
             <div class="dice-area">
                 <!-- 3D DICE -->
-                <div class="dice-3d-container">
+                <div class="dice-3d-container" id="diceContainer">
                     <div class="dice-3d" id="dice3d">
                         <div class="face face-front face-1">
                             <div class="dot-grid"><div class="dot a"></div></div>
@@ -453,7 +741,7 @@
     </div>
 
     <script>
-        // ----- AUDIO CONTEXT (for sound effects) -----
+        // ----- AUDIO CONTEXT -----
         let audioCtx = null;
 
         function initAudio() {
@@ -548,7 +836,7 @@
             } catch (_) {}
         }
 
-        // ----- GAME CONFIG (larger board: 800x800 canvas) -----
+        // ----- GAME CONFIG -----
         const BOARD_SIZE = 10;
         const TOTAL_SQUARES = 100;
         const SNAKES = { 16: 6, 47: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78 };
@@ -559,6 +847,7 @@
         const canvas = document.getElementById('boardCanvas');
         const ctx = canvas.getContext('2d');
         const dice3d = document.getElementById('dice3d');
+        const diceContainer = document.getElementById('diceContainer');
         const rollBtn = document.getElementById('rollBtn');
         const statusMsg = document.getElementById('statusMsg');
         const playerListEl = document.getElementById('playerList');
@@ -579,8 +868,6 @@
         let gameOver = false;
 
         // ----- 3D DICE MAPPING (face value -> rotation) -----
-        // Front=1, Right=3, Back=6, Left=4, Top=2, Bottom=5
-        // To show a face, we rotate so that face points to front (Z+).
         const FACE_ROTATIONS = {
             1: { x: 0, y: 0 },
             2: { x: -90, y: 0 },
@@ -590,90 +877,118 @@
             6: { x: 0, y: 180 }
         };
 
-        let currentDiceRotation = { x: 0, y: 0 };
+        let currentDiceRotation = { x: 0, y: 0, z: 0 };
         let diceRolling = false;
+        let rollAnimId = null;
 
         function setDiceFace(value, animate = false) {
             const rot = FACE_ROTATIONS[value];
             if (!rot) return;
             currentDiceRotation.x = rot.x;
             currentDiceRotation.y = rot.y;
+            currentDiceRotation.z = 0;
             if (animate) {
                 dice3d.style.transition = 'transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.2)';
             } else {
                 dice3d.style.transition = 'none';
             }
-            dice3d.style.transform = `rotateX(${rot.x}deg) rotateY(${rot.y}deg)`;
+            dice3d.style.transform = `rotateX(${rot.x}deg) rotateY(${rot.y}deg) rotateZ(0deg)`;
         }
 
-        // initial face 1
         setDiceFace(1, false);
 
+        // ----- HD 3D DICE ROLL – 5 seconds physics simulation -----
         function rollDice3D(callback) {
             if (diceRolling) return;
             diceRolling = true;
+            diceContainer.classList.add('rolling');
+
             const finalValue = Math.floor(Math.random() * 6) + 1;
             const targetRot = FACE_ROTATIONS[finalValue];
 
-            // Random extra spins (2-4 full rotations)
-            const extraX = (Math.floor(Math.random() * 3) + 2) * 360;
-            const extraY = (Math.floor(Math.random() * 3) + 2) * 360;
-
-            // Start from current rotation, add spins, then end at target
+            // Current rotation
             const startX = currentDiceRotation.x;
             const startY = currentDiceRotation.y;
+            const startZ = currentDiceRotation.z || 0;
 
-            // We'll animate using JS to have fine control over the final position.
-            // Use a smooth step animation with easing.
-            const duration = 800 + Math.random() * 400;
+            // Random spin counts: 4–7 full rotations on X and Y, 2–4 on Z
+            const spinsX = (Math.floor(Math.random() * 4) + 4) * 360;
+            const spinsY = (Math.floor(Math.random() * 4) + 4) * 360;
+            const spinsZ = (Math.floor(Math.random() * 3) + 2) * 360;
+
+            // End rotation: target + extra full spins
+            // We add the spins to the target, but keep the sign consistent
+            const endX = targetRot.x + spinsX;
+            const endY = targetRot.y + spinsY;
+            const endZ = spinsZ * (Math.random() > 0.5 ? 1 : -1);
+
+            // Also add some random wobble at the end for realism
+            // We'll use a physics-like approach: the dice will slow down naturally
+
+            const duration = 5000; // 5 seconds
             const startTime = performance.now();
 
-            // We need to compute total rotation: from start to (start + extraX + extraY) then to target.
-            // But we want to end exactly at target, so we'll animate from start to target + spins.
-            const endX = targetRot.x + extraX * (targetRot.x >= 0 ? 1 : -1); // ensure sign
-            const endY = targetRot.y + extraY * (targetRot.y >= 0 ? 1 : -1);
+            // For realistic deceleration, we use a custom easing that mimics friction
+            // and adds a slight "bounce" wobble at the end
 
-            // Simpler: we'll just set the transform with a large transition and hope it lands correctly.
-            // But to be precise, we'll use requestAnimationFrame and interpolate.
-            // I'll use a simpler approach: set a big transition and let CSS handle it.
-            // However, we need to know the exact final rotation to display the correct face.
-            // We'll set the final rotation to the target + many spins.
-            // Since CSS transition will overshoot and settle, we need to set the correct final value.
-            // I'll compute a final rotation that is targetRot + multiples of 360.
-            // But we also need to account for current rotation.
-            // Best: we set a keyframe animation or just use a large transition.
+            function animateDice(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
 
-            // For simplicity, I'll set the dice to a random spin and then set the final face.
-            // Since we need the user to see the 3D roll, I'll do this:
-            // 1. Set a random rotation with large spins.
-            // 2. After a delay, set the target rotation with a smooth transition.
+                // Easing: cubic with a long tail for natural deceleration
+                // Combined with a small overshoot for bounce effect
+                let ease;
+                if (progress < 0.7) {
+                    // Fast start, then decelerate
+                    const p = progress / 0.7;
+                    ease = p * p * (3 - 2 * p); // smoothstep
+                    ease = ease * 0.85;
+                } else {
+                    // Slow settle with tiny bounce
+                    const p = (progress - 0.7) / 0.3;
+                    // Ease out with a slight overshoot
+                    ease = 0.85 + 0.15 * (1 - Math.pow(1 - p, 3)) + 0.03 * Math.sin(p * Math.PI * 2) * (1 - p);
+                }
+                ease = Math.min(ease, 1);
 
-            // Step 1: random spin (no transition)
-            dice3d.style.transition = 'none';
-            const spinX = (Math.floor(Math.random() * 4) + 3) * 360 + Math.random() * 360;
-            const spinY = (Math.floor(Math.random() * 4) + 3) * 360 + Math.random() * 360;
-            dice3d.style.transform = `rotateX(${spinX}deg) rotateY(${spinY}deg)`;
+                // Interpolate rotation
+                const curX = startX + (endX - startX) * ease;
+                const curY = startY + (endY - startY) * ease;
+                const curZ = startZ + (endZ - startZ) * ease;
 
-            // Step 2: after a short delay, transition to target with a bounce
-            setTimeout(() => {
-                dice3d.style.transition = 'transform 0.9s cubic-bezier(0.2, 0.8, 0.3, 1.3)';
-                const finalX = targetRot.x + (Math.floor(spinX / 360) * 360) * (targetRot.x >= 0 ? 1 : -1);
-                const finalY = targetRot.y + (Math.floor(spinY / 360) * 360) * (targetRot.y >= 0 ? 1 : -1);
-                // Actually, we just want to end at targetRot with enough spins to look realistic.
-                // We'll just set targetRot plus multiples of 360 based on the spin.
-                const spinsX = Math.floor(spinX / 360);
-                const spinsY = Math.floor(spinY / 360);
-                // Ensure we end at exactly targetRot (mod 360)
-                const endX = targetRot.x + spinsX * 360;
-                const endY = targetRot.y + spinsY * 360;
-                dice3d.style.transform = `rotateX(${endX}deg) rotateY(${endY}deg)`;
-                currentDiceRotation.x = targetRot.x;
-                currentDiceRotation.y = targetRot.y;
-                setTimeout(() => {
+                // Add a tiny wobble near the end for realism (oscillation)
+                let wobbleX = 0,
+                    wobbleY = 0;
+                if (progress > 0.75) {
+                    const wobbleAmount = 2.5 * (1 - progress) / 0.25;
+                    const wobbleFreq = 12;
+                    wobbleX = wobbleAmount * Math.sin(progress * wobbleFreq * Math.PI * 2) * 0.3;
+                    wobbleY = wobbleAmount * Math.cos(progress * wobbleFreq * Math.PI * 2 + 1.2) * 0.3;
+                }
+
+                const finalX = curX + wobbleX;
+                const finalY = curY + wobbleY;
+                const finalZ = curZ;
+
+                dice3d.style.transition = 'none';
+                dice3d.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(${finalZ}deg)`;
+
+                if (progress < 1) {
+                    rollAnimId = requestAnimationFrame(animateDice);
+                } else {
+                    // Snap to exact target face
+                    dice3d.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1)';
+                    dice3d.style.transform = `rotateX(${targetRot.x}deg) rotateY(${targetRot.y}deg) rotateZ(0deg)`;
+                    currentDiceRotation.x = targetRot.x;
+                    currentDiceRotation.y = targetRot.y;
+                    currentDiceRotation.z = 0;
+                    diceContainer.classList.remove('rolling');
                     diceRolling = false;
                     callback(finalValue);
-                }, 1000);
-            }, 200);
+                }
+            }
+
+            rollAnimId = requestAnimationFrame(animateDice);
         }
 
         // ----- SETUP: Generate player inputs -----
@@ -719,11 +1034,15 @@
 
         // ----- RESET / NEW GAME -----
         function resetGame() {
+            if (rollAnimId) { cancelAnimationFrame(rollAnimId);
+                rollAnimId = null; }
             for (let p of players) p.pos = 1;
             currentPlayer = 0;
             gameOver = false;
             isRolling = false;
             animating = false;
+            diceRolling = false;
+            diceContainer.classList.remove('rolling');
             rollBtn.disabled = false;
             setDiceFace(1, false);
             statusMsg.textContent = `${players[0].name}'s turn`;
@@ -732,7 +1051,7 @@
             drawBoard();
         }
 
-        // ----- DRAWING HELPERS (for 800x800 canvas) -----
+        // ----- DRAWING HELPERS -----
         function getSquareCenter(squareNum) {
             const row = Math.floor((squareNum - 1) / BOARD_SIZE);
             const col = (squareNum - 1) % BOARD_SIZE;
@@ -741,7 +1060,7 @@
             return { x: x * 800 + 40, y: y * 800 - 40 };
         }
 
-        // ----- REALISTIC SNAKE (optimised for 800x800) -----
+        // ----- REALISTIC SNAKE -----
         function drawRealisticSnake(headSquare, tailSquare) {
             const from = getSquareCenter(headSquare);
             const to = getSquareCenter(tailSquare);
@@ -899,7 +1218,7 @@
             ctx.shadowBlur = 0;
         }
 
-        // ----- DRAW BOARD (800x800) -----
+        // ----- DRAW BOARD -----
         function drawBoard() {
             const W = 800,
                 H = 800;
@@ -1023,7 +1342,7 @@
             ctx.shadowBlur = 0;
         }
 
-        // ----- ANIMATION: step by step (with visible tokens) -----
+        // ----- ANIMATION: step by step -----
         function animateMove(playerIdx, steps, callback) {
             if (steps === 0) { callback(); return; }
             const p = players[playerIdx];
@@ -1051,7 +1370,6 @@
                     const x = from.x + (to.x - from.x) * ease;
                     const y = from.y + (to.y - from.y) * ease;
                     drawBoard();
-                    // draw moving token
                     const fontSize = 48;
                     ctx.shadowColor = 'rgba(0,0,0,0.6)';
                     ctx.shadowBlur = 18;
@@ -1171,9 +1489,10 @@
             overlaySub.textContent = `${winner.emoji} reached 100 first!`;
         }
 
-        // ----- ROLL (with 3D dice) -----
+        // ----- ROLL (with HD 3D dice) -----
         function rollDice() {
             if (isRolling || animating || gameOver) return;
+            if (diceRolling) return;
             initAudio();
             isRolling = true;
             rollBtn.disabled = true;
@@ -1194,7 +1513,8 @@
                 const p = players[i];
                 const span = document.createElement('span');
                 span.className = 'p-item' + (i === currentPlayer ? ' active' : '');
-                span.innerHTML = `<span class="emoji">${p.emoji}</span> ${p.name} <span class="pos">(${p.pos})</span>`;
+                span.innerHTML =
+                    `<span class="emoji">${p.emoji}</span> ${p.name} <span class="pos">(${p.pos})</span>`;
                 playerListEl.appendChild(span);
             }
             drawBoard();
@@ -1202,6 +1522,10 @@
 
         // ----- RESTART -----
         restartBtn.addEventListener('click', () => {
+            if (rollAnimId) { cancelAnimationFrame(rollAnimId);
+                rollAnimId = null; }
+            diceRolling = false;
+            diceContainer.classList.remove('rolling');
             resetGame();
         });
 
@@ -1212,7 +1536,7 @@
                 if (!setupOverlay.classList.contains('hidden')) return;
                 if (gameOver) {
                     resetGame();
-                } else if (!isRolling && !animating) {
+                } else if (!isRolling && !animating && !diceRolling) {
                     rollDice();
                 }
             }
@@ -1235,8 +1559,7 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        console.log('🐍 Big Board + 3D Dice loaded!');
-        console.log('Characters have a white background – easy to spot.');
+        console.log('🐍 Snakes & Ladders · HD 3D Dice with 5s roll!');
     </script>
 </body>
 </html>
